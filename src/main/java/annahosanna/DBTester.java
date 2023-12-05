@@ -52,41 +52,91 @@ public class DBTester {
 		options.addOption(new Option("p", "password", true, "Password."));
 		options.addOption(new Option("s", "server", true, "Server."));
 		options.addOption(new Option("t", "dbtype", true, "DB type (oracle, sqlserver, mysql,postgresql)."));
-		options.addOption(new Option("d", "domain", true, "Domain (only applies to )."));
+		options.addOption(new Option("d", "domain", true, "Domain (only applies to mssql and oracle)."));
+		options.addOption(new Option("c", "connectionstring", true, "Connection string."));
+		options.addOption(new Option("n", "classname", true, "JDBC class name."));
+
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = parser.parse(options, args);
-		if(cmd.hasOption("t")) && (cmd.hasOption("u") && (cmd.hasOption("p"))){
-			String dbType = cmd.getOptionValue("t");
+		// Handle dbtype
+		if ((cmd.hasOption("u")) && (cmd.hasOption("p"))) {
 			String username = cmd.getOptionValue("u");
 			String password = cmd.getOptionValue("p");
-			if ((dbType != null) && (!dbType.isEmpty()) && (username != null) && (!username.isEmpty()) && (password != null) && (!password.isEmpty())) {
-				if (dbType.equalsIgnoreCase("MYSQL")) {
-					exitCode = DBTester.connectToMySQL(server, user, password);
-				} else if (dbType.equalsIgnoreCase("POSTGRESQL")) {
-					exitCode = DBTester.connectToPostgreSQL(server, user, password);
-				} else if (dbType.equalsIgnoreCase("ODBC")) {
-					exitCode = DBTester.connectToODBC(server, user, password);
-				} else if ((cmd.hasOption("d"))) {
-					String domain = cmd.getOptionValue("d");
-					if ((domain != null) && (!domain.isEmpty())) {
-					 if (dbType.equalsIgnoreCase("MSSQL")) {
-						exitCode = DBTester.connectToMSSQL(server, domain, user, password);
-					} else if (dbType.equalsIgnoreCase("ORACLE")) {
-						exitCode = DBTester.connectToOracle(server, domain, user, password);
+			if ((username != null) && (!username.isEmpty()) && (password != null) && (!password.isEmpty())) {
+				if ((cmd.hasOption("t")) && (cmd.hasOption("s"))) {
+					String dbType = cmd.getOptionValue("t");
+					String server = cmd.getOptionValue("s");
+					if ((dbType != null) && (!dbType.isEmpty()) && (server != null) && (!server.isEmpty())) {
+						if (dbType.equalsIgnoreCase("MYSQL")) {
+							exitCode = DBTester.connectToMySQL(server, username, password);
+						} else if (dbType.equalsIgnoreCase("POSTGRESQL")) {
+							exitCode = DBTester.connectToPostgreSQL(server, username, password);
+						} else if (dbType.equalsIgnoreCase("ODBC")) {
+							exitCode = DBTester.connectToODBC(server, username, password);
+						} else if ((cmd.hasOption("d"))) {
+							String domain = cmd.getOptionValue("d");
+							if ((domain != null) && (!domain.isEmpty())) {
+					 			if (dbType.equalsIgnoreCase("MSSQL")) {
+									exitCode = DBTester.connectToMSSQL(server, domain, username, password);
+								} else if (dbType.equalsIgnoreCase("ORACLE")) {
+									exitCode = DBTester.connectToOracle(server, domain, username, password);
+								} else {
+									// None of the remaining db types
+									exitCode = 1;
+								}
+							} else {
+								// The remaining db types require a domain but the value was empty
+								exitCode = 1;	
+							}
+						} else {
+							// The remaining db types require a domain but one was not defined
+							exitCode = 1;
+						}
+					} else {
+						// A db type is required to have a value
+						exitCode = 1;
+					}
+				} else if ((cmd.hasOption("n")) && (cmd.hasOption("c")))  {
+					// A db type was not found - what about a class name
+					String className = cmd.getOptionValue("n");
+					String connectionString = cmd.getOptionValue("c");
+					if ((className != null) && (!className.isEmpty()) && (connectionString != null) && (!connectionString.isEmpty())) {
+						exitCode = DBTester.connectToClass(className, connectionString, username, password);
 					} else {
 						exitCode = 1;
 					}
 				} else {
-					exitCode = 1;	
+					exitCode = 1;
 				}
 			} else {
 				exitCode = 1;
 			}
+		} else {
+			exitCode = 1;
 		}
 		exit(exitCode);
 	}
 
 	// I hope the compiler does not try to optimize out the connection attempts b/c they are not used
+		public static int connectToClass(String className, String connectionString, String user, String password) {
+		int exitCode = 1;
+		try {
+			Class.forName(className);
+			exitCode = 0;
+		} catch (ClassNotFoundException e1) {
+			// throw new RuntimeException("Cannot find JDBC driver. Make sure the file postgresql-x.x-xxxx.jdbcx.jar is in the path");
+			exitCode = 1;
+		}
+		try {
+			DriverManager.getConnection(connectionString, user, password);
+			exitCode = 0;
+		} catch (SQLException e1) {
+			// throw new RuntimeException("Cannot connect to DB server: " + e1.getMessage());
+			exitCode = 1;
+		}
+		return exitCode;
+	}
+
 	public static int connectToPostgreSQL(String server, String user, String password) {
 		int exitCode = 1;
 		if (!server.contains("/"))
@@ -107,6 +157,7 @@ public class DBTester {
 			// throw new RuntimeException("Cannot connect to DB server: " + e1.getMessage());
 			exitCode = 1;
 		}
+		return exitCode;
 	}
 
 	public static int connectToMySQL(String server, String user, String password) {
@@ -128,6 +179,7 @@ public class DBTester {
 			// throw new RuntimeException("Cannot connect to DB server: " + e1.getMessage());
 			exitCode = 1;
 		}
+		return exitCode;
 	}
 
 	public static int connectToODBC(String server, String user, String password) {
@@ -149,6 +201,7 @@ public class DBTester {
 			// throw new RuntimeException("Cannot connect to DB server: " + e1.getMessage());
 			exitCode = 1;
 		}
+		return exitCode;
 	}
 
 	/*
@@ -211,6 +264,7 @@ public class DBTester {
 		} catch (ClassNotFoundException e) {
 			// throw new RuntimeException("Class not found exception: " + e.getMessage());
 			exitCode = 1;
+			return exitCode;
 		}
 		// First try OCI driver:
 		String error = null;
