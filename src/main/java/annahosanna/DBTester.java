@@ -114,7 +114,7 @@ public class DBTester {
 		} else {
 			exitCode = 1;
 		}
-		exit(exitCode);
+		System.exit(exitCode);
 	}
 
 	// I hope the compiler does not try to optimize out the connection attempts b/c they are not used
