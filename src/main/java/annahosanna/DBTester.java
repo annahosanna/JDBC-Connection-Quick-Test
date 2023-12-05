@@ -222,7 +222,7 @@ public class DBTester {
 			exitCode = 1;
 		}
 		// If fails, try THIN driver:
-		if (error != null)
+		if (error != null) {
 			try {
 				String host = "127.0.0.1";
 				String sid = server;
@@ -246,6 +246,7 @@ public class DBTester {
 				// throw new RuntimeException("Cannot connect to DB server:\n- When using OCI: " + error + "\n- When using THIN: " + e.getMessage());
 				exitCode = 1;
 			}
+		}
 		return exitCode;
 	}
 }
