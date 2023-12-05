@@ -50,9 +50,9 @@ public class DBTester {
 		Options options = new Options();
 		options.addOption(new Option("u", "username", true, "Username."));
 		options.addOption(new Option("p", "password", true, "Password."));
-		options.addOption(new Option("s", "server", true, "TServer."));
+		options.addOption(new Option("s", "server", true, "Server."));
 		options.addOption(new Option("t", "dbtype", true, "DB type (oracle, sqlserver, mysql,postgresql)."));
-		options.addOption(new Option("d", "domain", true, "Turn on option with argument."));
+		options.addOption(new Option("d", "domain", true, "Domain (only applies to )."));
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = parser.parse(options, args);
 		if(cmd.hasOption("t")) && (cmd.hasOption("u") && (cmd.hasOption("p"))){
@@ -62,14 +62,22 @@ public class DBTester {
 			if ((dbType != null) && (!dbType.isEmpty()) && (username != null) && (!username.isEmpty()) && (password != null) && (!password.isEmpty())) {
 				if (dbType.equalsIgnoreCase("MYSQL")) {
 					exitCode = DBTester.connectToMySQL(server, user, password);
-				} else if (dbType.equalsIgnoreCase("MSSQL")) {
-					exitCode = DBTester.connectToMSSQL(server, domain, user, password);
-				} else if (dbType.equalsIgnoreCase("ORACLE")) {
-					exitCode = DBTester.connectToOracle(server, domain, user, password);
 				} else if (dbType.equalsIgnoreCase("POSTGRESQL")) {
 					exitCode = DBTester.connectToPostgreSQL(server, user, password);
 				} else if (dbType.equalsIgnoreCase("ODBC")) {
 					exitCode = DBTester.connectToODBC(server, user, password);
+				} else if ((cmd.hasOption("d"))) {
+					String domain = cmd.getOptionValue("d");
+					if ((domain != null) && (!domain.isEmpty())) {
+					 if (dbType.equalsIgnoreCase("MSSQL")) {
+						exitCode = DBTester.connectToMSSQL(server, domain, user, password);
+					} else if (dbType.equalsIgnoreCase("ORACLE")) {
+						exitCode = DBTester.connectToOracle(server, domain, user, password);
+					} else {
+						exitCode = 1;
+					}
+				} else {
+					exitCode = 1;	
 				}
 			} else {
 				exitCode = 1;
@@ -78,6 +86,7 @@ public class DBTester {
 		exit(exitCode);
 	}
 
+	// I hope the compiler does not try to optimize out the connection attempts b/c they are not used
 	public static int connectToPostgreSQL(String server, String user, String password) {
 		int exitCode = 1;
 		if (!server.contains("/"))
