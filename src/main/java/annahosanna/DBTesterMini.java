@@ -2,14 +2,11 @@ package annahosanna;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 
 public class DBTesterMini {
@@ -49,7 +46,7 @@ public class DBTesterMini {
       "  Oracle Database using OCI = jdbc:oracle:oci8:@localhost\n" +
       "  H2 Database = jdbc:h2:mem:mydatabase\n";
     System.out.println(help);
-    System.exit(0);
+    System.exit(1);
   }
 
   public static void main(String[] args) {
@@ -113,6 +110,8 @@ public class DBTesterMini {
         exitCode = 1;
       }
       System.exit(exitCode);
+    } else {
+      help();
     }
   }
 }
