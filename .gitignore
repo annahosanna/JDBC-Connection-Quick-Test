@@ -2,6 +2,9 @@
 bin/
 .project
 build/
+.DS_Store
+.settings/
+.classpath
 
 # Compiled class file
 *.class
