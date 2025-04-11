@@ -1,0 +1,36 @@
+apply plugin: 'java'
+apply plugin: "eclipse"
+
+repositories {
+  mavenCentral()
+}
+
+sourceSets {
+  main
+}
+
+dependencies {
+implementation group: 'commons-cli', name: 'commons-cli', version: '1.9.0'
+implementation group: 'com.oracle.database.jdbc', name: 'ojdbc-bom', version: '23.7.0.25.01'
+implementation "com.microsoft.sqlserver:mssql-jdbc:12.10.0.jre8"
+implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.17.0'
+}
+
+
+
+configurations {
+  compile
+}
+
+jar {
+    manifest {
+        attributes (
+          'Main-Class' : 'annahosanna.DBTester'
+        )
+    }
+    archiveFileName = "dbtester.jar"
+    duplicatesStrategy = "exclude"
+    from(configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }) {
+      exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
+    }
+}
