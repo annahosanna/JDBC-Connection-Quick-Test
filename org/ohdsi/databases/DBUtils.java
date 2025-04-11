@@ -85,28 +85,6 @@ public class DBUtils {
     return exitCode;
   }
 
-  public static int connectToODBC(String server, String user, String password) {
-    int exitCode = 1;
-    try {
-      Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
-      exitCode = 0;
-    } catch (ClassNotFoundException e1) {
-      // throw new RuntimeException("Cannot find ODBC driver");
-      exitCode = 1;
-    }
-
-    String url = "jdbc:odbc:" + server;
-
-    try {
-      DriverManager.getConnection(url, user, password);
-      exitCode = 0;
-    } catch (SQLException e1) {
-      // throw new RuntimeException("Cannot connect to DB server: " + e1.getMessage());
-      exitCode = 1;
-    }
-    return exitCode;
-  }
-
   /*
    * public static Connection connectToMSSQL(String server, String domain, String user, String password) { try {
    * Class.forName("net.sourceforge.jtds.jdbc.Driver");

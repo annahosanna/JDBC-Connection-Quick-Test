@@ -75,53 +75,41 @@ public class DBTester {
       (cmd.hasOption("u")) &&
       (!StringUtils.isBlank(cmd.getOptionValue("u"))) &&
       (cmd.hasOption("p")) &&
-      (!StringUtils.isBlank(cmd.getOptionValue("p")))
+      (!StringUtils.isBlank(cmd.getOptionValue("p"))) &&
+      (cmd.hasOption("t")) &&
+      (cmd.hasOption("s")) &&
+      (!StringUtils.isBlank(cmd.getOptionValue("t"))) &&
+      (!StringUtils.isBlank(cmd.getOptionValue("s")))
     ) {
       String username = cmd.getOptionValue("u");
       String password = cmd.getOptionValue("p");
-      if (
-        (cmd.hasOption("t")) &&
-        (cmd.hasOption("s")) &&
-        (!StringUtils.isBlank(cmd.getOptionValue("t"))) &&
-        (!StringUtils.isBlank(cmd.getOptionValue("s")))
+      String dbType = cmd.getOptionValue("t");
+      String server = cmd.getOptionValue("s");
+      if (dbType.equalsIgnoreCase("MYSQL")) {
+        exitCode = DBUtils.connectToMySQL(server, username, password);
+      } else if (dbType.equalsIgnoreCase("POSTGRESQL")) {
+        exitCode = DBUtils.connectToPostgreSQL(server, username, password);
+      } else if (dbType.equalsIgnoreCase("ODBC")) {
+        exitCode = DBUtils.connectToODBC(server, username, password);
+      } else if (
+        (cmd.hasOption("d")) && (!StringUtils.isBlank(cmd.getOptionValue("d")))
       ) {
-        String dbType = cmd.getOptionValue("t");
-        String server = cmd.getOptionValue("s");
-        if (dbType.equalsIgnoreCase("MYSQL")) {
-          exitCode = DBUtils.connectToMySQL(server, username, password);
-        } else if (dbType.equalsIgnoreCase("POSTGRESQL")) {
-          exitCode = DBUtils.connectToPostgreSQL(server, username, password);
-        } else if (dbType.equalsIgnoreCase("ODBC")) {
-          exitCode = DBUtils.connectToODBC(server, username, password);
-        } else if (
-          (cmd.hasOption("d")) &&
-          (!StringUtils.isBlank(cmd.getOptionValue("d")))
+        String domain = cmd.getOptionValue("d");
+        DBUtils.handleDBWithDomain(dbType, domain, server, username, password);
+      } else if ((cmd.hasOption("n")) && (cmd.hasOption("c"))) {
+        // A db type was not found - what about a class name
+        String className = cmd.getOptionValue("n");
+        String connectionString = cmd.getOptionValue("c");
+        if (
+          (!StringUtils.isBlank(className)) &&
+          (!StringUtils.isBlank(connectionString))
         ) {
-          String domain = cmd.getOptionValue("d");
-          DBUtils.handleDBWithDomain(
-            dbType,
-            domain,
-            server,
+          exitCode = DBUtils.connectToClass(
+            className,
+            connectionString,
             username,
             password
           );
-        } else if ((cmd.hasOption("n")) && (cmd.hasOption("c"))) {
-          // A db type was not found - what about a class name
-          String className = cmd.getOptionValue("n");
-          String connectionString = cmd.getOptionValue("c");
-          if (
-            (!StringUtils.isBlank(className)) &&
-            (!StringUtils.isBlank(connectionString))
-          ) {
-            exitCode = DBUtils.connectToClass(
-              className,
-              connectionString,
-              username,
-              password
-            );
-          } else {
-            exitCode = 1;
-          }
         } else {
           exitCode = 1;
         }
